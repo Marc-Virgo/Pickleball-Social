@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Player Social Stats | Social Pickleball</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell wide">
+    <header class="topbar">
+      <a class="back-link" href="index.html">← Home</a>
+      <h1>Player Social Stats</h1>
+    </header>
+
+    <section class="card">
+      <p class="muted">
+        Unique partners and opponents are calculated from completed rounds stored on this device.
+      </p>
+
+      <div class="summary-grid">
+        <div class="stat"><span id="playerCount">0</span><small>players</small></div>
+        <div class="stat"><span id="avgPartners">0</span><small>avg unique partners</small></div>
+        <div class="stat"><span id="avgOpponents">0</span><small>avg unique opponents</small></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Games</th>
+              <th>Unique Partners</th>
+              <th>Unique Opponents</th>
+              <th>Byes</th>
+            </tr>
+          </thead>
+          <tbody id="statsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="storage.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>
