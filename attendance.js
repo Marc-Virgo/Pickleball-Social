@@ -6,8 +6,8 @@ const courtForecast = document.getElementById("courtForecast");
 
 function forecast() {
   const n = state.players.filter(p => p.present).length;
-  const maxCourts = state.settings.maxCourts || 6;
-  const courts = Math.min(Math.floor(n / 4), maxCourts);
+  const selectedCourts = state.settings.selectedCourts || [1];
+  const courts = Math.min(Math.floor(n / 4), selectedCourts.length);
   const active = courts * 4;
   const sitting = Math.max(0, n - active);
   presentCount.textContent = n;

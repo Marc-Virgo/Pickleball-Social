@@ -40,3 +40,19 @@ There is no server or cloud database in this version.
 
 - stats.html       Per-player unique partner/opponent statistics
 - stats.js         Statistics calculation and display
+
+V4:
+- Court selection page for Courts 1–10.
+- Player count remains the primary determinant of courts actually used.
+- Matches are assigned to the selected physical court numbers.
+- Larger court labels and player names.
+- Repeat byes target at least 60 minutes apart whenever mathematically possible.
+- Fewest-total-byes fairness remains the first priority.
+
+- about.html       Credits and version history page
+
+V1.1 ABOUT PAGE NOTES
+- Version 1.0 deployed August 2026.
+- Version 1.1 added About Page and Court Selection Page.
+- Version 1.1 improved sit-out balancing to reduce closely spaced repeat sit-outs.
+- Version 1.1 increased player-name and court-number font sizes on mobile.

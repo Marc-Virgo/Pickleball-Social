@@ -269,3 +269,38 @@ input, select {
     text-align: left;
   }
 }
+
+.court-select-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}
+.court-toggle{position:relative}.court-toggle input{position:absolute;opacity:0;pointer-events:none}
+.court-toggle span{display:flex;min-height:58px;align-items:center;justify-content:center;border:2px solid var(--line);border-radius:14px;font-weight:850;font-size:1.15rem;background:white}
+.court-toggle input:checked+span{border-color:var(--accent);background:var(--soft);color:var(--accent-dark)}
+.court-setting{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:.9rem}
+.court-setting strong{color:var(--ink);font-size:1.05rem}.court-setting a{color:var(--accent-dark);font-weight:800}
+.court-card h3{font-size:1.55rem}.court-card .team{font-size:1.42rem;line-height:1.5}.court-card .vs{font-size:.92rem}
+.player-name-chip{font-size:1.12rem;padding:9px 13px}.history-body p{font-size:1.05rem;line-height:1.45}
+@media(max-width:620px){.court-select-grid{grid-template-columns:repeat(2,1fr)}.court-card h3{font-size:1.65rem}.court-card .team{font-size:1.5rem}}
+
+.about-copy {
+  max-width: 680px;
+  margin: 12px auto 24px;
+}
+.about-version {
+  text-align: left;
+  margin: 24px 0;
+}
+.about-version h2 {
+  margin-bottom: 14px;
+}
+.version-entry {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.version-entry h3 {
+  margin: 0 0 6px;
+  color: var(--accent-dark);
+}
+.version-entry p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}

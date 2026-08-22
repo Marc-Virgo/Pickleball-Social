@@ -1,126 +1,77 @@
 const SocialScheduler = (() => {
-  function count(map, id) {
-    return map && map[id] ? map[id] : 0;
-  }
+  const count=(m,id)=>(m&&m[id])||0;
+  function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-  function shuffle(arr) {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  function selectByes(players, byeCount) {
+  function selectByes(players, byeCount, nextRound, gameMinutes) {
     if (byeCount <= 0) return [];
+    const picked = [];
+    const hourRounds = Math.max(1, Math.round(60 / Math.max(1,gameMinutes)));
 
-    // Primary fairness rule:
-    // Nobody receives another bye while another present player has fewer byes.
-    const minByes = Math.min(...players.map(p => p.byes || 0));
-    let pool = players.filter(p => (p.byes || 0) === minByes);
+    while (picked.length < byeCount) {
+      const remaining = players.filter(p => !picked.includes(p));
+      const minByes = Math.min(...remaining.map(p => p.byes || 0));
+      let pool = remaining.filter(p => (p.byes || 0) === minByes);
 
-    // If more byes are required than the minimum-bye group contains,
-    // move to the next bye level only after exhausting this group.
-    const selected = [];
-    let level = minByes;
-    while (selected.length < byeCount) {
-      let levelPool = players.filter(
-        p => !selected.includes(p) && (p.byes || 0) === level
-      );
+      const hourSafe = pool.filter(p => p.lastByeRound == null || (nextRound - p.lastByeRound) >= hourRounds);
+      if (hourSafe.length) pool = hourSafe;
 
-      // Within an equally eligible group, prefer players who have played more games,
-      // then randomize exact ties.
-      levelPool = shuffle(levelPool).sort((a, b) => (b.games || 0) - (a.games || 0));
-      for (const p of levelPool) {
-        if (selected.length < byeCount) selected.push(p);
-      }
-      level++;
+      pool = shuffle(pool).sort((a,b) => {
+        const ag = a.lastByeRound == null ? 9999 : nextRound-a.lastByeRound;
+        const bg = b.lastByeRound == null ? 9999 : nextRound-b.lastByeRound;
+        if (bg !== ag) return bg-ag;
+        return (b.games||0)-(a.games||0);
+      });
+      picked.push(pool[0]);
     }
-    return selected;
+    return picked;
   }
 
-  function relationshipPenalty(a, b, type) {
-    if (type === "partner") {
-      const c = count(a.partnerCounts, b.id) + count(b.partnerCounts, a.id);
-      return c === 0 ? -20 : c * 35;
-    } else {
-      const c = count(a.opponentCounts, b.id) + count(b.opponentCounts, a.id);
-      return c === 0 ? -7 : c * 12;
+  function rel(a,b,type){
+    if(type==="partner"){
+      const c=count(a.partnerCounts,b.id)+count(b.partnerCounts,a.id);
+      return c===0?-20:c*35;
     }
+    const c=count(a.opponentCounts,b.id)+count(b.opponentCounts,a.id);
+    return c===0?-7:c*12;
   }
 
-  function gameScore(game) {
-    const [a,b,c,d] = game;
-    // lower is better
-    let score = 0;
-    score += relationshipPenalty(a,b,"partner");
-    score += relationshipPenalty(c,d,"partner");
-
-    score += relationshipPenalty(a,c,"opponent");
-    score += relationshipPenalty(a,d,"opponent");
-    score += relationshipPenalty(b,c,"opponent");
-    score += relationshipPenalty(b,d,"opponent");
-
-    // Tiny random tie breaker keeps repeated sessions from becoming deterministic.
-    score += Math.random() * 0.25;
-    return score;
+  function score(g){
+    const [a,b,c,d]=g;
+    return rel(a,b,"partner")+rel(c,d,"partner")
+      +rel(a,c,"opponent")+rel(a,d,"opponent")+rel(b,c,"opponent")+rel(b,d,"opponent")
+      +Math.random()*.25;
   }
 
-  function arrangementScore(groups) {
-    return groups.reduce((sum,g) => sum + gameScore(g), 0);
-  }
-
-  function randomArrangement(players) {
-    const s = shuffle(players);
-    const groups = [];
-    for (let i=0; i<s.length; i+=4) groups.push(s.slice(i,i+4));
+  function arrangement(players){
+    const s=shuffle(players), groups=[];
+    for(let i=0;i<s.length;i+=4) groups.push(s.slice(i,i+4));
     return groups;
   }
 
-  function optimize(players, iterations = 7000) {
-    let best = randomArrangement(players);
-    let bestScore = arrangementScore(best);
-
-    // Random-restart search works well for normal social-club sizes and
-    // remains fast in a browser on a phone.
-    for (let i=0; i<iterations; i++) {
-      const candidate = randomArrangement(players);
-      const score = arrangementScore(candidate);
-      if (score < bestScore) {
-        best = candidate;
-        bestScore = score;
-      }
+  function optimize(players){
+    let best=arrangement(players), bestScore=best.reduce((x,g)=>x+score(g),0);
+    for(let i=0;i<9000;i++){
+      const c=arrangement(players), cs=c.reduce((x,g)=>x+score(g),0);
+      if(cs<bestScore){best=c;bestScore=cs;}
     }
-
-    return { groups: best, score: bestScore };
+    return best;
   }
 
-  function generate(presentPlayers, maxCourts) {
-    const n = presentPlayers.length;
-    const courts = Math.min(Math.floor(n / 4), maxCourts);
-    const activeCount = courts * 4;
-    const byeCount = n - activeCount;
-    if (courts < 1) return { courts: 0, games: [], byes: [] };
+  function generate(players, selectedCourts, nextRound, gameMinutes){
+    const courts=[...selectedCourts].sort((a,b)=>a-b);
+    const courtCount=Math.min(Math.floor(players.length/4),courts.length);
+    const byeCount=players.length-courtCount*4;
+    if(courtCount<1) return {games:[],byes:[]};
 
-    const byes = selectByes(presentPlayers, byeCount);
-    const byeIds = new Set(byes.map(p => p.id));
-    const active = presentPlayers.filter(p => !byeIds.has(p.id));
-
-    const optimized = optimize(active);
-    const games = optimized.groups.map((group, idx) => ({
-      court: idx + 1,
-      teamA: [group[0].id, group[1].id],
-      teamB: [group[2].id, group[3].id]
-    }));
+    const byes=selectByes(players,byeCount,nextRound,gameMinutes);
+    const byeIds=new Set(byes.map(p=>p.id));
+    const active=players.filter(p=>!byeIds.has(p.id));
+    const groups=optimize(active);
 
     return {
-      courts,
-      games,
-      byes: byes.map(p => p.id),
-      optimizationScore: optimized.score
+      games: groups.map((g,i)=>({court:courts[i],teamA:[g[0].id,g[1].id],teamB:[g[2].id,g[3].id]})),
+      byes: byes.map(p=>p.id)
     };
   }
-
-  return { generate };
+  return {generate};
 })();

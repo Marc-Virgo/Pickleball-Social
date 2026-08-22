@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Court Selection | Social Pickleball</title><link rel="stylesheet" href="styles.css">
+</head>
+<body><main class="shell">
+<header class="topbar"><a class="back-link" href="index.html">← Home</a><h1>Court Selection</h1></header>
+<section class="card">
+<p class="lead">Select which of the 10 courts are available today.</p>
+<p class="muted">Attendance still determines how many courts are actually used. Games are assigned to the selected physical court numbers.</p>
+<div id="courtSelectGrid" class="court-select-grid"></div>
+<div class="toolbar">
+<button id="selectAll" class="button ghost compact" type="button">Select all 10</button>
+<button id="court1Only" class="button ghost compact" type="button">Court 1 only</button>
+</div>
+<div class="attendance-summary">
+<strong><span id="selectedCount">0</span> courts selected</strong><span id="selectedList"></span>
+</div>
+</section>
+<div class="sticky-actions"><a class="button primary" href="attendance.html">Continue to Attendance →</a></div>
+</main><script src="storage.js"></script><script src="courts.js"></script></body></html>
